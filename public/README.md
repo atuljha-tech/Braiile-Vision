@@ -1,10 +1,8 @@
-# Screenshots for the README
+# Screenshots (`public/`)
 
-Replace these placeholders with your own captures of the running app:
+| File | Description |
+|------|-------------|
+| **ss1.png** | Light/white theme — Braille image uploaded; app detects **“i am a teacher”** |
+| **ss2.png** | Dark theme — full Braille Vision UI |
 
-| File | Suggested content |
-|------|-------------------|
-| `ss1.png` | Home screen — logo, camera panel, status chips |
-| `ss2.png` | Detection in action — recognised text, confidence, history |
-
-After saving new PNGs here, commit and push. The README links to `public/ss1.png` and `public/ss2.png` on GitHub.
+These images are embedded in the root [README.md](../README.md).
