@@ -33,7 +33,7 @@ os.environ["OPENCV_AVFOUNDATION_SKIP_AUTH"] = "1"
 
 import cv2
 import numpy as np
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_from_directory
 from flask_cors import CORS
 
 from braille_ocr.realtime.camera_loop import CameraLoop
@@ -163,9 +163,18 @@ def _process_image_bytes(img_bytes: bytes) -> dict:
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
+_PUBLIC_DIR = os.path.join(os.path.dirname(__file__), "public")
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/public/<path:filename>")
+def public_files(filename):
+    """Serve README screenshots (ss1.png, ss2.png, etc.)."""
+    return send_from_directory(_PUBLIC_DIR, filename)
 
 
 @app.route("/api/frame")
@@ -389,11 +398,12 @@ def api_demo():
 
 # ── Entry point ───────────────────────────────────────────────────────────────
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", "5050"))
     print("\n" + "=" * 60)
     print("  Braille Accessibility Scanner")
-    print("  Open http://localhost:5050 in your browser")
+    print(f"  Open http://localhost:{port} in your browser")
     print("=" * 60 + "\n")
-    app.run(host="0.0.0.0", port=5050, debug=False, threaded=True)
+    app.run(host="0.0.0.0", port=port, debug=False, threaded=True)
 
 # Add post-processing correction for common CNN errors
 def correct_cnn_errors(text):

@@ -1,6 +1,7 @@
 # Web framework
 flask==2.3.3
 flask-cors==4.0.0
+gunicorn==21.2.0
 
 # Image processing
 pillow==10.1.0
