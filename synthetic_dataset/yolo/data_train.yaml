@@ -1,0 +1,5 @@
+path: /Users/it4/Braille-OCR-e-Braille-Tales/synthetic_dataset/yolo
+train: images/train
+val: images/val
+nc: 1
+names: ['braille_dot']

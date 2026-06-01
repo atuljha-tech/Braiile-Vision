@@ -108,6 +108,38 @@ def _ensure_cnn():
     return _CNN_OK
 
 
+_YOLO_OK = None
+_TF_OK = None
+
+
+def _ensure_yolo() -> bool:
+    global _YOLO_OK
+    if _YOLO_OK is not None:
+        return _YOLO_OK
+    try:
+        from braille_ai.yolo_dot_detector import is_yolo_available
+        _YOLO_OK = is_yolo_available()
+        print(f"{'✅' if _YOLO_OK else '⚠️ '} YOLOv8 dot detector: {'loaded' if _YOLO_OK else 'not found'}")
+    except Exception as e:
+        _YOLO_OK = False
+        print(f"⚠️  YOLO unavailable: {e}")
+    return _YOLO_OK
+
+
+def _ensure_tensorflow() -> bool:
+    global _TF_OK
+    if _TF_OK is not None:
+        return _TF_OK
+    try:
+        from braille_ai.tf_predictor import is_tensorflow_available
+        _TF_OK = is_tensorflow_available()
+        print(f"{'✅' if _TF_OK else '⚠️ '} TensorFlow CNN: {'loaded' if _TF_OK else 'not found'}")
+    except Exception as e:
+        _TF_OK = False
+        print(f"⚠️  TensorFlow unavailable: {e}")
+    return _TF_OK
+
+
 # ── Helper: process an image file for full-page OCR ──────────────────────────
 
 def _process_image_bytes(img_bytes: bytes) -> dict:
@@ -226,6 +258,8 @@ def api_status():
     status["running"] = camera.running
     status["groq_ok"] = _ensure_groq()
     status["cnn_ok"]  = _ensure_cnn()
+    status["yolo_ok"] = _ensure_yolo()
+    status["tensorflow_ok"] = _ensure_tensorflow()
     return jsonify(status)
 
 
@@ -307,7 +341,9 @@ def api_health():
         "status": "ok",
         "ts": time.time(),
         "groq": _ensure_groq(),
-        "cnn": _ensure_cnn(),
+        "cnn_pytorch": _ensure_cnn(),
+        "yolo": _ensure_yolo(),
+        "tensorflow": _ensure_tensorflow(),
         "browser_tts": True,
     })
 

@@ -9,10 +9,10 @@ Standard Grade-1 braille dot numbering:
 Bit mask: bit0=dot1, bit1=dot2, bit2=dot3, bit3=dot4, bit4=dot5, bit5=dot6
 
 Detection pipeline:
-  1. Find blobs (dots) using adaptive thresholding
+  1. Find dots: YOLOv8 (Ultralytics) + OpenCV adaptive thresholding (merged)
   2. Cluster dots into cells
   3. Decode each cell using geometric dot-pattern matching
-  4. Optionally refine with CNN classifier
+  4. Classify cells: PyTorch CNN + TensorFlow CNN ensemble
 """
 
 from __future__ import annotations
@@ -93,28 +93,26 @@ def detect_braille(gray: np.ndarray, camera_mode: bool = False) -> DetectionResu
     # Synthetic dataset images are 100×120px. If the image is small enough
     # to be a single cell, skip geometric detection and use CNN.
     if h <= 200 and w <= 200:
-        cnn = _get_cnn()
-        if cnn and cnn.model is not None:
-            try:
-                from PIL import Image as PILImage
-                pil_img = PILImage.fromarray(gray)
-                letter, conf = cnn.predict_cell(pil_img)
-                if conf > 50:
-                    char = letter.lower()
-                    return DetectionResult(
-                        text=char,
-                        boxes=[(0, 0, w, h)],
-                        dots=[],
-                        confidence=conf / 100.0,
-                        valid=True,
-                        dot_count=1,
-                        message="cnn",
-                        per_cell_conf=[conf / 100.0],
-                    )
-            except Exception:
-                pass  # fall through to geometric detection
+        try:
+            from PIL import Image as PILImage
+            from braille_ai.cell_classifier import predict_cell_ensemble
+            pil_img = PILImage.fromarray(gray)
+            letter, conf, backend = predict_cell_ensemble(pil_img)
+            if conf > 50 and letter != "?":
+                return DetectionResult(
+                    text=letter.lower(),
+                    boxes=[(0, 0, w, h)],
+                    dots=[],
+                    confidence=conf / 100.0,
+                    valid=True,
+                    dot_count=1,
+                    message=f"ensemble:{backend}",
+                    per_cell_conf=[conf / 100.0],
+                )
+        except Exception:
+            pass  # fall through to geometric detection
 
-    dots = _find_blobs_adaptive(gray)
+    dots = _find_dots_combined(gray)
     if len(dots) < MIN_DOTS:
         return DetectionResult(dot_count=len(dots), message="few_dots")
 
@@ -180,7 +178,32 @@ def braille_to_english(raw: str) -> str:
     return raw.strip().lower() if raw else ""
 
 
-# ── Blob detection ────────────────────────────────────────────────────────────
+# ── Dot detection (YOLO + OpenCV) ─────────────────────────────────────────────
+
+def _find_dots_combined(gray: np.ndarray) -> List[Tuple[int, int, int]]:
+    """Merge YOLOv8 dot boxes with classical OpenCV blob detection."""
+    cv_dots = _find_blobs_adaptive(gray)
+    try:
+        from braille_ai.yolo_dot_detector import detect_dots as yolo_dots
+        yolo = yolo_dots(gray)
+    except Exception:
+        yolo = []
+
+    if len(yolo) >= MIN_DOTS and len(cv_dots) < MIN_DOTS:
+        return yolo
+    if len(yolo) < MIN_DOTS:
+        return cv_dots
+    # Merge: keep YOLO centers, add OpenCV dots not within 1.5× median radius
+    merged = list(yolo)
+    med_r = float(np.median([d[2] for d in yolo])) if yolo else 8.0
+    thresh = max(med_r * 1.5, 10)
+    for cx, cy, r in cv_dots:
+        if all(np.hypot(cx - mx, cy - my) > thresh for mx, my, _ in merged):
+            merged.append((cx, cy, r))
+    return merged
+
+
+# ── Blob detection (OpenCV) ───────────────────────────────────────────────────
 
 def _find_blobs_adaptive(gray: np.ndarray) -> List[Tuple[int, int, int]]:
     """

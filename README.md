@@ -1,79 +1,69 @@
-# Braille Vision — AI Accessibility Scanner
+# 🔵 Braille Vision — AI Accessibility Scanner
 
-> **Real-time Braille OCR with CNN recognition, live camera scanning, and Text-to-Speech.**  
-> Built for accessibility. Powered by a **custom synthetic dataset**, PyTorch, and Groq LLaMA.
+> **Real-time Braille OCR · CNN Recognition · Live Camera · Text-to-Speech**  
+> Built for accessibility. Powered by a **hand-crafted synthetic dataset**, PyTorch, TensorFlow, YOLOv8, and Groq LLaMA.
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=flat-square)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.1-orange?style=flat-square)](https://pytorch.org)
 [![Flask](https://img.shields.io/badge/Flask-2.3-green?style=flat-square)](https://flask.palletsprojects.com)
-[![License](https://img.shields.io/badge/License-MIT-purple?style=flat-square)](LICENSE)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15-FF6F00?style=flat-square)](https://tensorflow.org)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-purple?style=flat-square)](https://ultralytics.com)
+[![Groq](https://img.shields.io/badge/Groq-LLaMA%203.1-red?style=flat-square)](https://console.groq.com)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 
 **Repository:** [github.com/atuljha-tech/Braiile-Vision](https://github.com/atuljha-tech/Braiile-Vision)
 
 ---
 
-## Dedication & synthetic dataset
+## 🇮🇳 Jai Hind — Dedicated to India & the Visually Impaired
 
-This project is the result of hands-on work on **Braille accessibility**: building a pipeline that turns camera frames and uploads into readable, speakable text.
+> *"जय हिन्द"* — This project is dedicated to **India**, to every **visually impaired person** who deserves equal access to the written word, and to the spirit of **ScioBraille** — science in service of humanity.
 
-The CNN at its core was trained on a **synthetic Braille cell dataset** created for this project:
+The Braille text in the image below reads:
 
-| | |
-|---|---|
-| **Images** | 1,560 (26 letters × 60 variants) |
-| **Augmentation** | Position jitter, rotation, Gaussian blur |
-| **Generator** | `synthetic_dataset/scripts/generate_dataset.py` |
-| **Training** | `synthetic_dataset/scripts/train_model.py` |
-| **Weights** | `synthetic_dataset/models/braille_cnn.pth` (~8 MB) |
+> **"Jai Hind India ScioBraille Visually Impaired Great Project"**
 
-That dataset and training run are what make single-cell recognition reliable; the geometric decoder and Groq correction extend that to real photos and noisy OCR.
+This is the very kind of real-world Braille that **Braille Vision** was built to read — embossed dots on paper, photographed with a phone, decoded by AI, and spoken aloud.
+
+![Real Braille: Jai Hind India ScioBraille Visually Impaired Great Project](docs/sample_output.png)
+
+*Real embossed Braille photographed under natural light — the exact input this system is designed to handle.*
 
 ---
 
-## Screenshots
+## 🏆 What Makes This Special
 
-Real captures from **Braille Vision** running locally — upload OCR, dual themes, and live confidence.
+This is not a toy demo. Every component was built from scratch:
+
+- **Custom synthetic dataset** — 1,560 Braille cell images (26 letters × 60 variants), generated with position jitter, rotation, and Gaussian blur
+- **Three AI backends** — PyTorch CNN, TensorFlow CNN, and YOLOv8 dot detector, all trained on the same dataset
+- **Groq LLaMA 3.1** correction layer — turns noisy OCR into clean English
+- **Real-time camera pipeline** — browser `getUserMedia` + OpenCV, no plugins needed
+- **Full accessibility UI** — dark/light theme, TTS, keyboard shortcuts, confidence scores
+
+---
+
+## 📸 Screenshots
+
+Real captures from **Braille Vision** running locally.
 
 | Light theme — image upload | Dark theme — full UI |
-|----------------------------|----------------------|
-| ![Light theme: upload detects “i am a teacher”](public/ss1.png) | ![Dark theme: Braille Vision UI](public/ss2.png) |
-| **ss1** — White/light mode. A Braille image is uploaded; the app decodes and displays **“i am a teacher”** with detection overlay and confidence. | **ss2** — Dark mode. Same scanner with the premium dark theme, status chips, and recognition panel. |
+|:---:|:---:|
+| ![Light theme: upload detects braille text](public/ss1.png) | ![Dark theme: Braille Vision UI](public/ss2.png) |
+| **ss1** — Light mode. A Braille image is uploaded; the app decodes it, shows the annotated overlay, confidence score, and detected text. | **ss2** — Dark mode. Same scanner with the premium dark theme, status chips, recognition panel, and TTS controls. |
 
-**Links:** [ss1.png](public/ss1.png) · [ss2.png](public/ss2.png)
-
----
-
-## What it does
-
-1. **Detects** Braille dots (adaptive CV + contour analysis)
-2. **Classifies** cells with the trained CNN (A–Z)
-3. **Corrects** noisy output with Groq LLaMA 3.1 (optional)
-4. **Speaks** results via TTS
+**Direct links:** [ss1.png](public/ss1.png) · [ss2.png](public/ss2.png)
 
 ---
 
-## Features
-
-| Feature | Details |
-|---------|---------|
-| Live camera | Browser `getUserMedia` |
-| Image upload | Drag-and-drop or file picker |
-| CNN | PyTorch, synthetic dataset (1,560 images) |
-| Groq AI | LLaMA 3.1-8b-instant correction |
-| TTS | pyttsx3 (+ macOS `say` fallback) |
-| UI | Dark/light theme, confidence, history |
-| Keyboard | Space, R, H, C, U, D shortcuts |
-
----
-
-## Run locally
+## 🚀 Run Locally (5 minutes)
 
 ### Prerequisites
 
 - **Python 3.9+** (3.11 recommended)
 - macOS / Linux / Windows
-- Webcam optional (upload works without it)
-- **Groq API key** optional ([console.groq.com](https://console.groq.com))
+- Webcam optional — upload works without it
+- **Groq API key** optional but recommended → [console.groq.com](https://console.groq.com)
 
 ### Steps
 
@@ -86,14 +76,14 @@ cd Braiile-Vision
 python3 -m venv venv
 source venv/bin/activate          # Windows: venv\Scripts\activate
 
-# 3. Dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Environment (optional)
+# 4. Set up environment (optional but recommended)
 cp .env.example .env
-# Edit .env → GROQ_API_KEY=gsk_...
+# Open .env and paste your GROQ_API_KEY=gsk_...
 
-# 5. Start server
+# 5. Start the server
 python3 app.py
 ```
 
@@ -103,18 +93,18 @@ Open **http://localhost:5050** in Chrome or Edge (best camera support).
 
 ```bash
 curl http://localhost:5050/api/health
-# → {"status":"ok","cnn":true,"groq":true|false,...}
+# → {"status":"ok","cnn_pytorch":true,"groq":true,...}
 ```
 
 ---
 
-## Deploy on Render (step by step)
+## 🌐 Deploy on Render (Full Guide)
 
-Braille Vision is one **Flask web service** (UI + API + PyTorch). Render hosts the full app.
+Braille Vision is a single **Flask web service** (UI + API + PyTorch). Render hosts the full app.
 
 ### Before you start
 
-- Code is on GitHub: [atuljha-tech/Braiile-Vision](https://github.com/atuljha-tech/Braiile-Vision)
+- Code on GitHub: [atuljha-tech/Braiile-Vision](https://github.com/atuljha-tech/Braiile-Vision)
 - Optional: [Groq API key](https://console.groq.com) for LLaMA correction
 - A [Render](https://render.com) account (free tier works)
 
@@ -122,255 +112,261 @@ Braille Vision is one **Flask web service** (UI + API + PyTorch). Render hosts t
 
 ### Step 1 — Sign in and connect GitHub
 
-1. Open [dashboard.render.com](https://dashboard.render.com).
-2. Sign up or log in (GitHub login is easiest).
-3. If asked, **authorize Render** to access your GitHub account.
+1. Open [dashboard.render.com](https://dashboard.render.com)
+2. Sign up / log in (GitHub login is easiest)
+3. Authorize Render to access your GitHub account
 
 ---
 
 ### Step 2 — Create a new Web Service
 
-1. Click **New +** (top right) → **Web Service**.
-2. Under **Connect a repository**, find **Braiile-Vision** (or `atuljha-tech/Braiile-Vision`).
-3. Click **Connect**.  
-   If the repo is missing: **Configure account** → grant access to that repo → refresh.
+1. Click **New +** → **Web Service**
+2. Find **Braiile-Vision** (or `atuljha-tech/Braiile-Vision`) and click **Connect**
+3. If the repo is missing: **Configure account** → grant access → refresh
 
 ---
 
 ### Step 3 — Configure the service
 
-Use these values on the create screen:
-
 | Field | Value |
 |-------|--------|
-| **Name** | `braille-vision` (or any name; becomes part of the URL) |
-| **Region** | Choose closest to you (e.g. Singapore / Oregon) |
+| **Name** | `braille-vision` |
+| **Region** | Closest to you (e.g. Singapore / Oregon) |
 | **Branch** | `main` |
 | **Runtime** | **Python 3** |
 | **Build Command** | `bash build.sh` |
 | **Start Command** | `gunicorn app:app -c gunicorn.conf.py` |
 | **Instance type** | **Free** (or paid for no sleep) |
 
-Leave **Root Directory** blank unless the app lived in a subfolder.
-
 ---
 
-### Step 4 — Add environment variables
+### Step 4 — Environment Variables (paste these on Render)
 
-Scroll to **Environment Variables** → **Add Environment Variable**.
+Go to **Environment Variables** → **Add Environment Variable** and add each one:
 
-Add these one at a time:
+| Key | Value | Notes |
+|-----|--------|-------|
+| `PYTHON_VERSION` | `3.11.9` | Required |
+| `GROQ_API_KEY` | `gsk_xxxxxxxxxxxxxxxxxxxx` | From [console.groq.com](https://console.groq.com) — optional but enables AI correction |
+| `DISABLE_SERVER_TTS` | `1` | Server has no speakers; UI uses browser Web Speech API |
+| `OMP_NUM_THREADS` | `1` | Keeps memory low on free tier |
 
-| Key | Value |
-|-----|--------|
-| `PYTHON_VERSION` | `3.11.9` |
-| `GROQ_API_KEY` | Your key from [console.groq.com](https://console.groq.com) (optional but recommended) |
-| `DISABLE_SERVER_TTS` | `1` (server has no speakers; UI uses browser speech) |
-| `OMP_NUM_THREADS` | `1` (keeps memory low on free tier) |
-
-**Do not** set `PORT` — Render injects it automatically.
+> ⚠️ Do **not** set `PORT` — Render injects it automatically.
 
 ---
 
 ### Step 5 — Deploy
 
-1. Click **Create Web Service**.
-2. Render clones the repo and runs the build (installing PyTorch can take **5–15 minutes** on free tier).
-3. Watch the **Logs** tab:
-   - Build should end with something like `Successfully installed ...`
-   - Deploy should show `Listening at: http://0.0.0.0:XXXX`
-4. When status is **Live**, open the URL at the top, e.g. `https://braille-vision.onrender.com`.
+1. Click **Create Web Service**
+2. Render clones the repo and runs the build (PyTorch install takes **5–15 min** on free tier)
+3. Watch **Logs** tab — build ends with `Successfully installed ...`, deploy shows `Listening at: http://0.0.0.0:XXXX`
+4. When status is **Live**, open your URL: `https://braille-vision.onrender.com`
 
 ---
 
-### Step 6 — Verify the live site
+### Step 6 — Verify
 
-1. Open your Render URL in Chrome or Edge.
-2. Wait if the free instance was sleeping (first load can take 30–60 seconds).
-3. Check health: visit `https://<your-app>.onrender.com/api/health`  
-   Expect: `"status":"ok"` and `"cnn":true`.
-4. Upload a Braille image (same flow as in **ss1**) and confirm text appears.
-5. Toggle **light / dark theme** (as in **ss2**).
+1. Visit `https://<your-app>.onrender.com/api/health` → expect `"status":"ok"`
+2. Upload a Braille image → confirm text appears
+3. Toggle light/dark theme
 
 ---
 
-### Step 7 — After deploy (optional)
+### Render Troubleshooting
 
-| Task | How |
-|------|-----|
-| **Custom domain** | Service → **Settings** → **Custom Domains** |
-| **Redeploy after git push** | Auto if **Auto-Deploy** is on; else **Manual Deploy** → Deploy latest commit |
-| **View errors** | **Logs** tab (build + runtime) |
-| **Blueprint deploy** | **New +** → **Blueprint** → point at repo `render.yaml` |
-
----
-
-### Render troubleshooting
-
-| Issue | What to do |
-|-------|------------|
-| Build timeout / memory | Use `bash build.sh` (CPU-only PyTorch); upgrade to paid instance if needed |
-| `Exited with status 1` on deploy | **Start Command** must be `gunicorn app:app -c gunicorn.conf.py` (not the old `--bind` line) |
-| `proxies` / Groq TypeError | Fixed in latest repo (`groq>=0.13`); redeploy + set `GROQ_API_KEY` on Render |
-| No voice on Render | Expected — speech uses **browser TTS** (Web Speech API); allow sound in the tab |
-| `ModuleNotFoundError` | Confirm **Build Command** is `bash build.sh` |
-| App crashes on start | Check logs for missing `braille_cnn.pth`; ensure `synthetic_dataset/models/` is in the repo |
-| Very slow first page | Free tier cold start — normal |
+| Issue | Fix |
+|-------|-----|
+| Build timeout / OOM | Use `bash build.sh` (CPU-only PyTorch); upgrade to paid if needed |
+| `Exited with status 1` | Start Command must be `gunicorn app:app -c gunicorn.conf.py` |
+| No voice on Render | Expected — speech uses **browser TTS** (Web Speech API) |
+| `ModuleNotFoundError` | Confirm Build Command is `bash build.sh` |
 | Groq not working | Add `GROQ_API_KEY` in Environment and redeploy |
+| Slow first load | Free tier cold start — normal (30–60 sec) |
 
 ---
 
-## Record a 2-minute demo video (step by step)
+## ▲ Deploy on Vercel (Frontend Only)
 
-Use this script for a hackathon or README demo (~2 minutes). Record **locally** or on your **Render URL** after deploy.
+> **Note:** The full Flask + PyTorch backend must run on **Render**. Vercel is only for a separate static/Next.js frontend that calls your Render API.
 
-### Before recording
+If you build a separate frontend:
 
-1. App running: `python3 app.py` **or** live Render URL.
-2. Browser: Chrome/Edge, **zoom 100%**, window maximized.
-3. Prepare one Braille image that decodes to something clear (e.g. the upload that shows **“i am a teacher”**).
-4. Close extra tabs and notifications.
-5. Choose a recorder (pick one):
-   - **macOS:** QuickTime → File → New Screen Recording, or `Cmd + Shift + 5` → Record Selected Portion
-   - **Windows:** Xbox Game Bar (`Win + G`) → Capture, or Snipping Tool → screen record
-   - **Any OS:** [OBS Studio](https://obsproject.com) (free) — add Display Capture + optional mic
+| Key | Value |
+|-----|--------|
+| `NEXT_PUBLIC_API_URL` | `https://your-app.onrender.com` |
+
+Keep `GROQ_API_KEY` on Render only — never expose it on the frontend.
 
 ---
 
-### Suggested 2-minute script (~120 seconds)
+## 🧠 Model & Dataset
 
-| Time | What to show | What to say (example) |
-|------|----------------|------------------------|
-| **0:00–0:15** | Home screen, logo, “Braille Vision” | “This is Braille Vision — an AI accessibility scanner that reads Braille from images and camera.” |
-| **0:15–0:25** | Point to Groq / CNN status chips | “It uses a CNN trained on my synthetic dataset plus optional Groq LLaMA correction.” |
-| **0:25–0:55** | **Light theme** → Upload → pick image → show **“i am a teacher”** result | “I upload a Braille page; the pipeline detects dots, classifies cells, and outputs readable text.” |
-| **0:55–1:10** | Confidence meter / history / Speak if visible | “You get confidence scores, history, and text-to-speech.” |
-| **1:10–1:25** | Toggle to **dark theme** (ss2 look) | “The UI supports light and dark themes for comfortable use.” |
-| **1:25–1:45** | Optional: camera “Allow” → brief scan, **or** second upload | “You can also use the live camera from the browser.” |
-| **1:45–2:00** | End on README/GitHub or Render URL | “Built for accessibility — links in the GitHub repo. Thank you.” |
+### Synthetic Dataset
 
----
+| Property | Value |
+|----------|-------|
+| **Total images** | 1,560 |
+| **Classes** | 26 (A–Z Braille cells) |
+| **Variants per class** | 60 |
+| **Augmentation** | Position jitter, rotation ±15°, Gaussian blur |
+| **Generator** | `synthetic_dataset/scripts/generate_dataset.py` |
+| **PyTorch training** | `synthetic_dataset/scripts/train_model.py` |
+| **TensorFlow training** | `synthetic_dataset/scripts/train_model_tf.py` |
+| **YOLO training** | `synthetic_dataset/scripts/train_yolo.py` |
+| **Model weights** | `synthetic_dataset/models/braille_cnn.pth` (~8 MB) |
 
-### Recording steps (macOS QuickTime example)
-
-1. Open the app at http://localhost:5050 (or your Render URL).
-2. **QuickTime Player** → **File** → **New Screen Recording**.
-3. Click **Record** → select the browser window (or full screen).
-4. Follow the script table above; speak clearly.
-5. Click **Stop** in the menu bar.
-6. **File** → **Save** → e.g. `braille-vision-demo.mp4`.
-7. Trim to ~2:00 in QuickTime (**Edit** → **Trim**) or iMovie / CapCut if needed.
-
----
-
-### Recording steps (OBS — any platform)
-
-1. Install OBS → **New Scene** → add **Display Capture** (or **Window Capture** for the browser only).
-2. **Settings** → **Output** → Recording format **MP4**, quality **High**.
-3. Optional: add **Audio Input Capture** for microphone.
-4. Click **Start Recording**, run through the script, **Stop Recording**.
-5. File is in **Videos** (or path shown in Settings).
-
----
-
-### After recording
-
-1. Watch once — cut long pauses; aim for **1:45–2:15**.
-2. Upload to YouTube (Unlisted) or attach to hackathon submission.
-3. Optional: add to README:
-
-```markdown
-## Demo video
-[![Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://youtu.be/YOUR_VIDEO_ID)
-```
-
----
-
-### B. Vercel (not for this backend)
-
-This repo needs **PyTorch + OpenCV on a long-running server**. Deploy on **Render** only. Vercel is only relevant if you later add a separate static frontend that calls your Render API (`NEXT_PUBLIC_API_URL=https://your-app.onrender.com`). Keep `GROQ_API_KEY` on Render, not Vercel.
-
----
-
-## Model & dataset
-
-### Architecture
+### CNN Architecture (PyTorch)
 
 ```
 64×64 grayscale cell
-  → Conv2d(1→32) + ReLU + MaxPool
-  → Conv2d(32→64) + ReLU + MaxPool
-  → Linear → 26 classes (A–Z)
+  → Conv2d(1→32, 3×3) + ReLU + MaxPool(2×2)
+  → Conv2d(32→64, 3×3) + ReLU + MaxPool(2×2)
+  → Flatten → Linear(1024→256) → ReLU → Dropout(0.5)
+  → Linear(256→26)   ← 26 Braille letters A–Z
 ```
 
-### Reproduce training
+### Reproduce Training
 
 ```bash
+# Generate synthetic dataset
 python3 synthetic_dataset/scripts/generate_dataset.py
+
+# Train PyTorch CNN
 python3 synthetic_dataset/scripts/train_model.py
+
+# Train TensorFlow CNN
+python3 synthetic_dataset/scripts/train_model_tf.py
+
+# Train YOLOv8 dot detector
+python3 synthetic_dataset/scripts/train_yolo.py
 ```
 
 ---
 
-## Project structure
+## 📁 Project Structure
 
 ```
-├── app.py                    # Flask server
-├── Procfile                  # Render / Heroku start
-├── render.yaml               # Render blueprint
-├── public/ss1.png, ss2.png   # README screenshots
-├── braille_ocr/realtime/     # Camera, TTS, detection
-├── braille_ai/               # CNN + Groq correction
-├── synthetic_dataset/        # Dataset, scripts, model
-├── templates/ + static/      # Web UI
-└── requirements.txt
+Braiile-Vision/
+├── app.py                          # Flask server (all API endpoints)
+├── requirements.txt                # Python dependencies
+├── build.sh                        # Render build script (CPU PyTorch)
+├── gunicorn.conf.py                # Gunicorn config for Render
+├── render.yaml                     # Render blueprint
+├── Procfile                        # Heroku / Render start
+├── .env.example                    # Environment variable template
+│
+├── public/
+│   ├── ss1.png                     # Screenshot: light theme upload
+│   └── ss2.png                     # Screenshot: dark theme UI
+│
+├── docs/
+│   └── sample_output.png           # Real Braille photo (Jai Hind)
+│
+├── braille_ocr/
+│   ├── realtime/
+│   │   ├── braille_detector.py     # Core dot detection + cell decode
+│   │   ├── camera_loop.py          # OpenCV camera loop
+│   │   ├── frame_analyzer.py       # Frame quality analysis
+│   │   ├── session.py              # Scan session + history
+│   │   └── tts_engine.py           # pyttsx3 TTS engine
+│   ├── core/
+│   │   ├── ocr.py                  # Full-page OCR pipeline
+│   │   ├── segmentation.py         # Row/cell segmentation
+│   │   ├── transcription.py        # Braille → English mapping
+│   │   ├── pef_writer.py           # PEF Braille file export
+│   │   └── rtf_writer.py           # RTF export
+│   └── config.py
+│
+├── braille_ai/
+│   ├── cnn_predictor.py            # PyTorch CNN inference
+│   ├── tf_predictor.py             # TensorFlow CNN inference
+│   ├── yolo_dot_detector.py        # YOLOv8 dot detection
+│   ├── cell_classifier.py          # Unified classifier (all backends)
+│   ├── braille_decoder.py          # Cell pattern → letter
+│   ├── dot_detector.py             # Classical CV dot detector
+│   ├── ocr_corrector.py            # Groq LLaMA correction
+│   └── predict_cells.py            # Batch cell prediction
+│
+├── synthetic_dataset/
+│   ├── generated/                  # 1,560 training images (A–Z × 60)
+│   ├── models/
+│   │   ├── braille_cnn.pth         # PyTorch weights
+│   │   ├── braille_cnn_tf.keras    # TensorFlow weights
+│   │   └── tf_class_labels.txt     # Class label map
+│   └── scripts/
+│       ├── generate_dataset.py     # Synthetic image generator
+│       ├── train_model.py          # PyTorch trainer
+│       ├── train_model_tf.py       # TensorFlow trainer
+│       ├── train_yolo.py           # YOLOv8 trainer
+│       └── generate_yolo_dataset.py
+│
+├── templates/
+│   └── index.html                  # Main UI (Jinja2)
+└── static/
+    ├── css/style.css               # Styles (dark + light theme)
+    └── js/app.js                   # Frontend JS (camera, upload, TTS)
 ```
 
 ---
 
-## API (summary)
+## 🔌 API Reference
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/` | Web UI |
-| GET | `/api/health` | Health check |
-| GET | `/api/status` | Scanner status |
-| POST | `/api/upload` | Image upload |
-| POST | `/api/process_frame` | Webcam frame (base64) |
-| POST | `/api/speak` | TTS |
-
-Full list: see earlier docs in repo or hit `/api/health` after deploy.
-
----
-
-## Environment variables (local `.env`)
-
-```env
-GROQ_API_KEY=your_groq_api_key_here
-PORT=5050
-```
-
-`PORT` is optional locally (defaults to `5050`). On Render, use Render’s `PORT` only.
+| `GET` | `/` | Web UI |
+| `GET` | `/api/health` | Health check (CNN, Groq, YOLO status) |
+| `GET` | `/api/status` | Scanner status + session stats |
+| `GET` | `/api/frame` | Latest annotated camera frame (base64 JPEG) |
+| `GET` | `/api/history` | Last 30 recognised text segments |
+| `GET` | `/api/voices` | Available TTS voices |
+| `GET` | `/api/demo` | Run demo on bundled test image |
+| `POST` | `/api/upload` | Upload image file for OCR |
+| `POST` | `/api/process_frame` | Process browser webcam frame (base64) |
+| `POST` | `/api/speak` | Speak text via TTS `{"text":"..."}` |
+| `POST` | `/api/speak_history` | Re-read full session history |
+| `POST` | `/api/pause` | Pause/resume scanning `{"paused":true}` |
+| `POST` | `/api/clear` | Clear session history |
+| `POST` | `/api/tts_settings` | Update TTS rate/volume/voice |
+| `POST` | `/api/camera/restart` | Restart OpenCV camera |
 
 ---
 
-## Keyboard shortcuts
+## ⌨️ Keyboard Shortcuts
 
 | Key | Action |
 |-----|--------|
-| Space | Pause / resume |
-| R | Repeat last text |
-| H | Read history |
-| C | Copy last text |
-| U | Upload |
-| D | Demo |
+| `Space` | Pause / resume scanning |
+| `R` | Repeat last detected text |
+| `H` | Read full history aloud |
+| `C` | Copy last text to clipboard |
+| `U` | Open upload dialog |
+| `D` | Run demo |
 
 ---
 
-## License
+## 🔑 Environment Variables
+
+```env
+# .env (local development)
+GROQ_API_KEY=gsk_your_key_here     # Groq LLaMA correction (optional)
+PORT=5050                           # Local port (Render sets this automatically)
+```
+
+Full list for Render deployment: see **Step 4** above.
+
+---
+
+## 📜 License
 
 MIT — see [LICENSE](LICENSE).
 
 ---
 
-*Built with care for accessibility. Every person deserves to read.*
+<div align="center">
+
+**🇮🇳 Jai Hind · जय हिन्द**
+
+*Built with care for every person who deserves to read.*  
+*Dedicated to the visually impaired community and the spirit of accessible technology.*
+
+</div>

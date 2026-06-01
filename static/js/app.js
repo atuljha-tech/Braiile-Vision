@@ -42,6 +42,8 @@ const confFill       = document.getElementById('conf-fill');
 const confPct        = document.getElementById('conf-pct');
 const indGroq        = document.getElementById('ind-groq');
 const indCnn         = document.getElementById('ind-cnn');
+const indYolo        = document.getElementById('ind-yolo');
+const indTf          = document.getElementById('ind-tf');
 const voiceSelect    = document.getElementById('voice-select');
 const cameraWrap     = document.getElementById('camera-wrap');
 
@@ -273,8 +275,10 @@ function updateStatus(data) {
 
   if (data.confidence != null) setConfidence(data.confidence);
 
-  if (data.groq_ok) indGroq.classList.add('active', 'ind-active');
-  if (data.cnn_ok)  indCnn.classList.add('active', 'ind-active');
+  if (data.groq_ok) indGroq?.classList.add('active', 'ind-active');
+  if (data.cnn_ok)  indCnn?.classList.add('active', 'ind-active');
+  if (data.yolo_ok) indYolo?.classList.add('active', 'ind-active');
+  if (data.tensorflow_ok) indTf?.classList.add('active', 'ind-active');
 
   const newText = data.last_text || '';
   if (newText && newText !== lastText) {
@@ -492,7 +496,9 @@ async function checkHealth() {
     const res  = await fetch('/api/health');
     const data = await res.json();
     if (data.groq) indGroq?.classList.add('active', 'ind-active');
-    if (data.cnn)  indCnn?.classList.add('active', 'ind-active');
+    if (data.cnn_pytorch || data.cnn) indCnn?.classList.add('active', 'ind-active');
+    if (data.yolo) indYolo?.classList.add('active', 'ind-active');
+    if (data.tensorflow) indTf?.classList.add('active', 'ind-active');
   } catch (e) { /* offline */ }
 }
 
