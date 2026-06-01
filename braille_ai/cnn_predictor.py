@@ -35,17 +35,22 @@ class BrailleCNN(nn.Module):
 
 LABELS = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 class CNNPredictor:
     def __init__(self, model_path=None):
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        
-        # Try multiple possible model locations
+        # Render free tier has no GPU; CPU-only wheels keep memory lower
+        self.device = torch.device("cpu")
+
+        # Try multiple possible model locations (absolute paths work on any cwd)
         possible_paths = [
             model_path,
+            os.path.join(_REPO_ROOT, "synthetic_dataset/models/braille_cnn.pth"),
+            os.path.join(_REPO_ROOT, "braille_ai/models/braille_cnn.pth"),
+            os.path.join(_REPO_ROOT, "models/braille_cnn.pth"),
             "synthetic_dataset/models/braille_cnn.pth",
-            "braille_ai/models/braille_cnn.pth",
-            "models/braille_cnn.pth",
-            "braille_cnn.pth"
+            "braille_cnn.pth",
         ]
         
         self.model = None
@@ -54,7 +59,7 @@ class CNNPredictor:
             if path and os.path.exists(path):
                 try:
                     self.model = BrailleCNN()
-                    self.model.load_state_dict(torch.load(path, map_location=self.device))
+                    self.model.load_state_dict(torch.load(path, map_location="cpu"))
                     self.model.to(self.device)
                     self.model.eval()
                     print(f"✅ CNN Model loaded from {path}")

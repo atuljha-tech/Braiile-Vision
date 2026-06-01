@@ -30,6 +30,9 @@ import time
 # OpenCV cannot show the macOS auth dialog from Flask's background thread.
 # The browser "Allow camera" button (getUserMedia) is the primary camera path.
 os.environ["OPENCV_AVFOUNDATION_SKIP_AUTH"] = "1"
+# Keep PyTorch thread count low on small Render instances
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
 
 import cv2
 import numpy as np
@@ -61,16 +64,26 @@ except ImportError:
     _GROQ_OK = False
     def correct_with_groq(text): return text
 
-# ── CNN predictor (optional) ──────────────────────────────────────────────────
-try:
-    from braille_ai.cnn_predictor import CNNPredictor
-    _cnn = CNNPredictor()
-    _CNN_OK = _cnn.model is not None
-    print(f"{'✅' if _CNN_OK else '⚠️ '} CNN model: {'loaded' if _CNN_OK else 'not found'}")
-except Exception as e:
-    _CNN_OK = False
-    _cnn = None
-    print(f"⚠️  CNN predictor unavailable: {e}")
+# ── CNN predictor (lazy — avoids OOM on Render during gunicorn import) ─────────
+_cnn = None
+_CNN_OK = None  # None = not loaded yet
+
+
+def _ensure_cnn():
+    """Load CNN on first use so gunicorn can bind the port before PyTorch starts."""
+    global _cnn, _CNN_OK
+    if _CNN_OK is not None:
+        return _CNN_OK
+    try:
+        from braille_ai.cnn_predictor import CNNPredictor
+        _cnn = CNNPredictor()
+        _CNN_OK = _cnn.model is not None
+        print(f"{'✅' if _CNN_OK else '⚠️ '} CNN model: {'loaded' if _CNN_OK else 'not found'}")
+    except Exception as e:
+        _cnn = None
+        _CNN_OK = False
+        print(f"⚠️  CNN predictor unavailable: {e}")
+    return _CNN_OK
 
 
 # ── Helper: process an image file for full-page OCR ──────────────────────────
@@ -190,7 +203,7 @@ def api_status():
     status["paused"]  = session.is_paused
     status["running"] = camera.running
     status["groq_ok"] = _GROQ_OK
-    status["cnn_ok"]  = _CNN_OK
+    status["cnn_ok"]  = _ensure_cnn()
     return jsonify(status)
 
 
@@ -268,7 +281,12 @@ def api_tts_settings():
 
 @app.route("/api/health")
 def api_health():
-    return jsonify({"status": "ok", "ts": time.time(), "groq": _GROQ_OK, "cnn": _CNN_OK})
+    return jsonify({
+        "status": "ok",
+        "ts": time.time(),
+        "groq": _GROQ_OK,
+        "cnn": _ensure_cnn(),
+    })
 
 
 @app.route("/api/process_frame", methods=["POST"])

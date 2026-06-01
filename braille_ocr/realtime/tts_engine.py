@@ -12,6 +12,7 @@ The engine runs speech in a background thread so it never blocks the
 Flask request handlers.
 """
 
+import os
 import subprocess
 import sys
 import threading
@@ -39,6 +40,11 @@ class TTSEngine:
         self._seq   = 0          # tie-breaker for equal priorities
         self._engine = None      # pyttsx3 engine (lazy-init in worker thread)
         self._use_pyttsx3 = True
+
+        # Headless cloud hosts (Render): no espeak/audio — browser TTS handles speech
+        if os.environ.get("DISABLE_SERVER_TTS", "").lower() in ("1", "true", "yes"):
+            self._use_pyttsx3 = False
+            print("ℹ️  Server TTS disabled (DISABLE_SERVER_TTS); use browser speech when deployed")
 
         # Worker thread
         self._thread = threading.Thread(target=self._worker, daemon=True)

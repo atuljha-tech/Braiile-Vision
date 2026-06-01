@@ -147,8 +147,8 @@ Use these values on the create screen:
 | **Region** | Choose closest to you (e.g. Singapore / Oregon) |
 | **Branch** | `main` |
 | **Runtime** | **Python 3** |
-| **Build Command** | `pip install -r requirements.txt` |
-| **Start Command** | `gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120` |
+| **Build Command** | `bash build.sh` |
+| **Start Command** | `gunicorn app:app -c gunicorn.conf.py` |
 | **Instance type** | **Free** (or paid for no sleep) |
 
 Leave **Root Directory** blank unless the app lived in a subfolder.
@@ -165,6 +165,8 @@ Add these one at a time:
 |-----|--------|
 | `PYTHON_VERSION` | `3.11.9` |
 | `GROQ_API_KEY` | Your key from [console.groq.com](https://console.groq.com) (optional but recommended) |
+| `DISABLE_SERVER_TTS` | `1` (server has no speakers; UI uses browser speech) |
+| `OMP_NUM_THREADS` | `1` (keeps memory low on free tier) |
 
 **Do not** set `PORT` — Render injects it automatically.
 
@@ -207,8 +209,9 @@ Add these one at a time:
 
 | Issue | What to do |
 |-------|------------|
-| Build timeout / memory | Retry deploy; or use a paid instance |
-| `ModuleNotFoundError` | Confirm **Build Command** is `pip install -r requirements.txt` |
+| Build timeout / memory | Use `bash build.sh` (CPU-only PyTorch); upgrade to paid instance if needed |
+| `Exited with status 1` on deploy | Update **Start Command** to `gunicorn app:app -c gunicorn.conf.py`; add `DISABLE_SERVER_TTS=1` |
+| `ModuleNotFoundError` | Confirm **Build Command** is `bash build.sh` |
 | App crashes on start | Check logs for missing `braille_cnn.pth`; ensure `synthetic_dataset/models/` is in the repo |
 | Very slow first page | Free tier cold start — normal |
 | Groq not working | Add `GROQ_API_KEY` in Environment and redeploy |
