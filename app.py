@@ -33,6 +33,9 @@ os.environ["OPENCV_AVFOUNDATION_SKIP_AUTH"] = "1"
 # Keep PyTorch thread count low on small Render instances
 os.environ.setdefault("OMP_NUM_THREADS", "1")
 os.environ.setdefault("MKL_NUM_THREADS", "1")
+# Render has no audio stack — browser Web Speech API handles TTS in production
+if os.environ.get("RENDER"):
+    os.environ.setdefault("DISABLE_SERVER_TTS", "1")
 
 import cv2
 import numpy as np
@@ -55,14 +58,33 @@ camera  = CameraLoop(tts, session, camera_index=0, target_fps=8)
 # Browser webcam is primary — click "Allow camera" in the UI.
 camera._push_placeholder("Click Allow camera above.\nVideo only — no microphone.")
 
-# ── Groq corrector (optional) ─────────────────────────────────────────────────
+# ── Groq corrector (lazy — do not init client at import; httpx/groq versions vary) ─
+_GROQ_OK = None
+
 try:
     from braille_ai.ocr_corrector import correct_with_groq, is_groq_available
-    _GROQ_OK = is_groq_available()
-    print(f"{'✅' if _GROQ_OK else '⚠️ '} Groq AI correction: {'enabled' if _GROQ_OK else 'disabled (no API key)'}")
 except ImportError:
     _GROQ_OK = False
-    def correct_with_groq(text): return text
+    def correct_with_groq(text):  # noqa: F811
+        return text
+    def is_groq_available():
+        return False
+
+
+def _ensure_groq() -> bool:
+    global _GROQ_OK
+    if _GROQ_OK is not None:
+        return _GROQ_OK
+    try:
+        _GROQ_OK = is_groq_available()
+        print(
+            f"{'✅' if _GROQ_OK else '⚠️ '} Groq AI correction: "
+            f"{'enabled' if _GROQ_OK else 'disabled (no/invalid API key)'}"
+        )
+    except Exception as e:
+        _GROQ_OK = False
+        print(f"⚠️  Groq unavailable: {e}")
+    return _GROQ_OK
 
 # ── CNN predictor (lazy — avoids OOM on Render during gunicorn import) ─────────
 _cnn = None
@@ -138,7 +160,7 @@ def _process_image_bytes(img_bytes: bytes) -> dict:
 
     # Groq correction
     corrected = english
-    if _GROQ_OK and english:
+    if _ensure_groq() and english:
         corrected = correct_with_groq(english)
 
     # Annotate frame with per-dot coloured circles and cell boxes
@@ -170,7 +192,7 @@ def _process_image_bytes(img_bytes: bytes) -> dict:
         "confidence": round(result.confidence, 2),
         "dot_count": result.dot_count,
         "frame": frame_b64,
-        "groq_used": _GROQ_OK and corrected != english,
+        "groq_used": _ensure_groq() and corrected != english,
     }
 
 
@@ -202,7 +224,7 @@ def api_status():
     status["stats"]   = session.stats()
     status["paused"]  = session.is_paused
     status["running"] = camera.running
-    status["groq_ok"] = _GROQ_OK
+    status["groq_ok"] = _ensure_groq()
     status["cnn_ok"]  = _ensure_cnn()
     return jsonify(status)
 
@@ -284,8 +306,9 @@ def api_health():
     return jsonify({
         "status": "ok",
         "ts": time.time(),
-        "groq": _GROQ_OK,
+        "groq": _ensure_groq(),
         "cnn": _ensure_cnn(),
+        "browser_tts": True,
     })
 
 
@@ -385,7 +408,7 @@ def api_demo():
 
     if out.get("valid") and out.get("text"):
         text = out["text"]
-        if _GROQ_OK:
+        if _ensure_groq():
             text = correct_with_groq(text)
         session.add_text(text, source="demo", confidence=out.get("confidence", 1.0))
         tts.speak(f"Detected: {text}", priority=True)

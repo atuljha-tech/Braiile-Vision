@@ -73,8 +73,10 @@ class TTSEngine:
 
     def _worker(self) -> None:
         """Background thread: drain the queue and speak each item."""
-        # Try to init pyttsx3 once in this thread (required on some platforms)
-        self._engine = self._init_pyttsx3()
+        if not self._use_pyttsx3:
+            self._engine = None
+        else:
+            self._engine = self._init_pyttsx3()
 
         while True:
             try:

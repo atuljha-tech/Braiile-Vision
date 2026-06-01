@@ -209,6 +209,7 @@ async function handleUpload(event) {
         aiBadge.style.display = data.groq_used ? 'inline-flex' : 'none';
         setConfidence(data.confidence || 0);
         showToast(`✅ Detected: ${displayText.slice(0, 50)}`);
+        speakInBrowser(displayText);
       } else {
         showToast('⚠ No Braille detected in image');
       }
@@ -340,6 +341,32 @@ function qualityColour(q) {
   return 'var(--orange)';
 }
 
+// ── TTS (browser Web Speech — works on Render; server pyttsx3 is local-only) ─
+function getTtsRate() {
+  const el = document.getElementById('tts-rate');
+  return el ? parseInt(el.value, 10) : 175;
+}
+
+function speakInBrowser(text) {
+  if (!text || !('speechSynthesis' in window)) return false;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = Math.max(0.5, Math.min(2, getTtsRate() / 175));
+    const vid = voiceSelect?.value;
+    if (vid) {
+      const voices = speechSynthesis.getVoices();
+      const v = voices.find(x => x.voiceURI === vid || x.name === vid);
+      if (v) u.voice = v;
+    }
+    speechSynthesis.speak(u);
+    return true;
+  } catch (e) {
+    console.warn('Browser TTS failed', e);
+    return false;
+  }
+}
+
 // ── TTS controls ──────────────────────────────────────────────────────────────
 async function togglePause() {
   const res  = await fetch('/api/pause', {
@@ -367,33 +394,42 @@ async function speakManual() {
   const input = document.getElementById('manual-input');
   const text  = input.value.trim();
   if (!text) return;
-  await fetch('/api/speak', {
+  speakInBrowser(text);
+  fetch('/api/speak', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
-  });
+  }).catch(() => {});
   input.value = '';
   showToast('🔊 Speaking: ' + text.slice(0, 40));
 }
 
 async function speakHistory() {
-  await fetch('/api/speak_history', { method: 'POST' });
+  try {
+    const res = await fetch('/api/history');
+    const items = await res.json();
+    const full = items.map(i => i.text).filter(Boolean).join('. ');
+    if (full) speakInBrowser(full);
+  } catch (e) { /* ignore */ }
+  fetch('/api/speak_history', { method: 'POST' }).catch(() => {});
   showToast('📖 Reading full history…');
 }
 
 async function speakLast() {
   if (!lastText) { showToast('Nothing to repeat yet'); return; }
-  await fetch('/api/speak', {
+  speakInBrowser(lastText);
+  fetch('/api/speak', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text: lastText }),
-  });
+  }).catch(() => {});
   showToast('🔁 Repeating last text');
 }
 
 async function speakText(text) {
-  await fetch('/api/speak', {
+  speakInBrowser(text);
+  fetch('/api/speak', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
-  });
+  }).catch(() => {});
   showToast('🔊 Speaking…');
 }
 
@@ -414,20 +450,50 @@ async function updateTTS() {
   });
 }
 
+function fillVoiceSelect(voices) {
+  if (!voiceSelect || !voices.length) return;
+  voiceSelect.innerHTML = '<option value="">System default</option>';
+  voices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = v.name + (v.lang ? ` (${v.lang})` : '');
+    voiceSelect.appendChild(opt);
+  });
+}
+
 async function loadVoices() {
   try {
     const res  = await fetch('/api/voices');
     const data = await res.json();
     const voices = data.voices || [];
-    if (!voices.length) return;
-    voiceSelect.innerHTML = '<option value="">System default</option>';
-    voices.forEach(v => {
-      const opt = document.createElement('option');
-      opt.value = v.id;
-      opt.textContent = v.name + (v.lang ? ` (${v.lang})` : '');
-      voiceSelect.appendChild(opt);
-    });
-  } catch (e) { /* voices unavailable */ }
+    if (voices.length) {
+      fillVoiceSelect(voices);
+      return;
+    }
+  } catch (e) { /* server voices unavailable on Render */ }
+
+  if ('speechSynthesis' in window) {
+    const loadBrowserVoices = () => {
+      const bv = speechSynthesis.getVoices();
+      if (!bv.length) return;
+      fillVoiceSelect(bv.map(v => ({
+        id: v.voiceURI,
+        name: v.name,
+        lang: v.lang || '',
+      })));
+    };
+    loadBrowserVoices();
+    speechSynthesis.onvoiceschanged = loadBrowserVoices;
+  }
+}
+
+async function checkHealth() {
+  try {
+    const res  = await fetch('/api/health');
+    const data = await res.json();
+    if (data.groq) indGroq?.classList.add('active', 'ind-active');
+    if (data.cnn)  indCnn?.classList.add('active', 'ind-active');
+  } catch (e) { /* offline */ }
 }
 
 // ── Demo ──────────────────────────────────────────────────────────────────────
@@ -448,6 +514,7 @@ async function runDemo(image) {
       setTimeout(() => lastTextEl.classList.remove('flash'), 900);
       setConfidence(data.confidence || 0);
       showToast(`✅ Demo: ${data.text}`);
+      speakInBrowser(data.text);
     } else {
       showToast('⚠ Demo: no Braille detected');
     }
@@ -487,4 +554,5 @@ pollFrame();
 pollStatus();
 pollHistory();
 loadVoices();
+checkHealth();
 showToast('Click Allow Camera or Upload an image to start');

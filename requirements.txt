@@ -13,8 +13,8 @@ opencv-python-headless==4.8.1.78
 torch==2.1.0
 torchvision==0.16.0
 
-# AI correction
-groq==0.4.2
+# AI correction (0.4.x breaks on httpx 0.28+ — "proxies" TypeError on Render)
+groq>=0.13.0,<1.0
 python-dotenv==1.0.0
 
 # Text-to-speech (optional locally; set DISABLE_SERVER_TTS=1 on Render)

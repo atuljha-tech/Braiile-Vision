@@ -210,7 +210,9 @@ Add these one at a time:
 | Issue | What to do |
 |-------|------------|
 | Build timeout / memory | Use `bash build.sh` (CPU-only PyTorch); upgrade to paid instance if needed |
-| `Exited with status 1` on deploy | Update **Start Command** to `gunicorn app:app -c gunicorn.conf.py`; add `DISABLE_SERVER_TTS=1` |
+| `Exited with status 1` on deploy | **Start Command** must be `gunicorn app:app -c gunicorn.conf.py` (not the old `--bind` line) |
+| `proxies` / Groq TypeError | Fixed in latest repo (`groq>=0.13`); redeploy + set `GROQ_API_KEY` on Render |
+| No voice on Render | Expected — speech uses **browser TTS** (Web Speech API); allow sound in the tab |
 | `ModuleNotFoundError` | Confirm **Build Command** is `bash build.sh` |
 | App crashes on start | Check logs for missing `braille_cnn.pth`; ensure `synthetic_dataset/models/` is in the repo |
 | Very slow first page | Free tier cold start — normal |
